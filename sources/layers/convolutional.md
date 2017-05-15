@@ -1,51 +1,48 @@
 <span style="float:right;">[[source]](https://github.com/fchollet/keras/blob/master/keras/layers/convolutional.py#L14)</span>
-### Convolution1D
+### Conv1D
 
 ```python
-keras.layers.convolutional.Convolution1D(nb_filter, filter_length, init='uniform', activation='linear', weights=None, border_mode='valid', subsample_length=1, W_regularizer=None, b_regularizer=None, activity_regularizer=None, W_constraint=None, b_constraint=None, bias=True, input_dim=None, input_length=None)
+keras.layers.convolutional.Conv1D(filters, kernel_size, strides=1, padding='valid', dilation_rate=1, activation=None, use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None)
 ```
 
-1次元入力の近傍をフィルターする畳み込み演算．このレイヤーを第一層に使う場合，キーワード引数として`input_dim`（整数値，例えば128次元ベクトル系列には128）を指定するか`input_shape`（整数のタプル，例えば10個の128次元ベクトル系列のでは(10, 128)）を指定してください．
+1次元畳み込みレイヤー（例: 時系列畳み込み）
 
-__Example__
+このレイヤーは、畳み込みカーネルを作成します。畳み込みカーネルは、単一の空間または時間的次元に渡ってレイヤーの入力と畳み込み演算し、テンソルを出力します。 `use_bias`がTrueの場合、バイアス項が出力に追加されます。加えてアクティベーションがNoneでない場合、出力にも適用されます。
 
-
-```python
-# apply a convolution 1d of length 3 to a sequence with 10 timesteps,
-# with 64 output filters
-model = Sequential()
-model.add(Convolution1D(64, 3, border_mode='same', input_shape=(10, 32)))
-# now model.output_shape == (None, 10, 64)
-
-# add a new conv1d on top
-model.add(Convolution1D(32, 3, border_mode='same'))
-# now model.output_shape == (None, 10, 32)
-```
+このレイヤーを第一層に使う場合，キーワード引数として`input_shape`（整数値のTupleまたはNone，例えば10個の128次元ベクトルなら`(10, 128)`を、128次元の可変シーケンスなら`(None, 128)`）を指定してください。
 
 __Arguments__
 
-- __nb_filter__: 使用する畳み込みカーネルの数（出力の次元）．
-- __filter_length__: それぞれのフィルターの（空間もしくは時間的な）長さ．
-- __init__: レイヤーの重みの初期化関数の名前（[initializations](../initializations.md)参照），
-	もしくは重み初期化に用いるTheano関数．このパラメータは`weights`引数を与えない場合にのみ有効です．
+- __filters__: 整数型, 出力の次元 (i.e. the number output of filters in the convolution).
+- __kernel_size__: 1次元畳み込み窓の長さを指定する整数またはタプル/単一の整数のリスト。
+- __strides__: An integer or tuple/list of a single integer, specifying the stride length of the convolution.
+	Specifying any stride value != 1 is incompatible with specifying any dilation_rate value != 1.
+- __padding__: "valid"，"causal"または"same"（大文字・小文字を区別しない）．
+	"causal" results in causal (dilated) convolutions, e.g. output[t] does not depend on input[t+1:].
+	Useful when modeling temporal data where the model should not violate the temporal order.
+	See WaveNet: A Generative Model for Raw Audio, section 2.1.
 - __activation__: 使用する活性化関数の名前（[activations](../activations.md)参照），
 	もしくは要素ごとのTheano関数．
 	もしなにも指定しなければ活性化は一切適用されません（つまり"線形"活性a(x) = x）．
+- __activation__: Activation function to use (see activations).
+	If you don't specify anything, no activation is applied (ie. "linear" activation: a(x) = x).
+
 - __weights__: 初期重みとして設定されるNumpy配列のリスト．
-- __border_mode__: 'valid' あるいは 'same'．
-- __subsample_length__: 出力を部分サンプルするときの長さ．
 - __W_regularizer__: メインの重み行列に適用される[WeightRegularizer](../regularizers.md)（例えばL1やL2正則化）のインスタンス．
+- __kernel_regularizer__: Regularizer function applied to the kernel weights matrix (see regularizer).
 - __b_regularizer__: バイアス項に適用される[WeightRegularizer](../regularizers.md)のインスタンス．
+- __bias_regularizer__: Regularizer function applied to the bias vector (see regularizer).
 - __activity_regularizer__: ネットワーク出力に適用される[ActivityRegularizer](../regularizers.md)のインスタンス．
+- __activity_regularizer__: Regularizer function applied to the output of the layer (its "activation"). (see regularizer).
 - __W_constraint__: メインの重み行列に適用される[constraints](../constraints.md)モジュール（例えばmaxnorm, nonneg）のインスタンス．
+- __kernel_constraint__: Constraint function applied to the kernel matrix (see constraints).
 - __b_constraint__: バイアス項に適用される[constraints](../constraints.md)モジュールのインスタンス．
 - __bias__: バイアス項を含むかどうか（レイヤをアフィンにするか線形にするか）．
-- __input_dim__: 入力のチャネル/次元数．
-	このレイヤーがモデルの初めのレイヤーの場合，
-	この引数もしくはキーワード引数`input_shape`を指定する必要があります．
-- __input_length__: 入力系列が一定のときのその長さ．
-	この引数は上流の`Flatten`そして`Dense`レイヤーを繋ぐときに必要となります．
-	これがないとdense出力の配列サイズを計算することができません．
+- __dilation_rate__: an integer or tuple/list of a single integer, specifying the dilation rate to use for dilated convolution. Currently, specifying any dilation_rate value != 1 is incompatible with specifying any strides value != 1.
+- __use_bias__: Boolean, レイヤーがバイアスベクトルを使用するかどうか。
+- __kernel_initializer__: Initializer for the kernel weights matrix (see initializers).
+- __bias_initializer__: Initializer for the bias vector (see initializers).
+- __bias_constraint__: Constraint function applied to the bias vector (see constraints).
 
 __Input shape__
 
